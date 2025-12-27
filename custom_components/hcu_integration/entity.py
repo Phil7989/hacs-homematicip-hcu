@@ -74,6 +74,73 @@ class SwitchStateMixin:
             self._attr_assumed_state = False
             self.async_write_ha_state()  # type: ignore[attr-defined]
 
+class HcuEventMixin(EventEntity):
+    """
+    Prevent Home Assistant from restoring the last event state on restart/reload.
+
+    Why:
+      EventEntity keeps track of the last fired event and HA may restore it on startup.
+      That restoration can look like a fresh "event detected" in the UI/logbook and
+      can trigger state-based automations.
+
+    How:
+      EventEntity restoration uses RestoreEntity helpers. Returning None disables restore.
+    """
+
+    _suppress_triggers: bool = True
+
+    async def async_get_last_state(self) -> State | None:  # type: ignore[override]
+        """Disable RestoreEntity state restore for this entity."""
+        return None
+
+    async def async_get_last_extra_data(self) -> dict[str, Any] | None:  # type: ignore[override]
+        """Disable RestoreEntity extra-data restore for this entity."""
+        return None
+
+    async def async_added_to_hass(self) -> None:
+        """
+        Mark entity as ready only after HA has started (or next loop tick when reloading).
+        This helps to suppress any coordinator "initial snapshot" triggers during setup.
+        """
+        await super().async_added_to_hass()
+
+        hass = self.hass
+        if hass is None:
+            self._suppress_triggers = False
+            return
+
+        if not hass.is_running:
+            self._suppress_triggers = True
+
+            @callback
+            def _on_started(_: Any) -> None:
+                self._suppress_triggers = False
+
+            self.async_on_remove(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _on_started))
+        else:
+            # Integration reload while HA is already running:
+            # suppress only during entity add / initial coordinator snapshot.
+            self._suppress_triggers = True
+            asyncio.get_running_loop().call_soon(self._enable_triggers)
+
+    @callback
+    def _enable_triggers(self) -> None:
+        self._suppress_triggers = False
+
+    @callback
+    def _fire_event(self, event_type: str, event_attributes: dict[str, Any] | None = None) -> None:
+        """Fire event and write state, unless we're currently suppressing startup/reload triggers."""
+        if self._suppress_triggers:
+            _LOGGER.debug(
+                "Suppressing event during startup/reload: %s %s type=%s",
+                getattr(self, "_device_id", "?"),
+                getattr(self, "_channel_index_str", "?"),
+                event_type,
+            )
+            return
+
+        self._trigger_event(event_type, event_attributes)
+        self.async_write_ha_state()
 
 class HcuBaseEntity(CoordinatorEntity["HcuCoordinator"], HcuEntityPrefixMixin, Entity):
     """Base class for entities tied to a specific Homematic IP device channel."""
