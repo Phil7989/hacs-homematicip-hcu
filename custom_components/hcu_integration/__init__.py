@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+import json
 from typing import Any, cast
 
 from homeassistant.config_entries import ConfigEntry
@@ -188,28 +189,42 @@ class HcuCoordinator(DataUpdateCoordinator[set[str]]):
 
     def _handle_event_message(self, msg: dict[str, Any]) -> None:
         """Process incoming event messages from the HCU."""
+    
         if msg.get("type") != "HMIP_SYSTEM_EVENT":
             return
-
+    
         body = msg.get("body", {})
         events = body.get("eventTransaction", {}).get("events", {})
         if not events:
             return
+    
+        
+        try:
+            pretty = json.dumps(
+                events,
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+                default=str
+            )
+            _LOGGER.debug("HMIP_SYSTEM_EVENT:\n%s", pretty)
+        except Exception:
+            _LOGGER.debug("HMIP_SYSTEM_EVENT: (repr): %r", events)
 
         device_channel_event_ids = self._handle_device_channel_events(events)
-
+    
         # Capture old timestamps BEFORE state is updated by process_events
         old_timestamps: dict[tuple[str, str], Any] = {
             (dev_id, ch_idx): ch.get("lastStatusUpdate")
             for dev_id, dev in self.client.state.get("devices", {}).items()
             for ch_idx, ch in dev.get("functionalChannels", {}).items()
         }
-
+    
         updated_ids = self.client.process_events(events)
-
+    
         event_channels = self._extract_event_channels(events)
         self._detect_timestamp_based_button_presses(updated_ids, event_channels, old_timestamps)
-
+    
         all_updated = updated_ids | device_channel_event_ids
         if all_updated:
             self.async_set_updated_data(all_updated)
@@ -219,6 +234,7 @@ class HcuCoordinator(DataUpdateCoordinator[set[str]]):
         updated_device_ids: set[str] = set()
 
         for event_data in events.values():
+            
             if not isinstance(event_data, dict):
                 continue
 

@@ -49,10 +49,26 @@ CONF_ENTITY_PREFIX = "entity_prefix"
 CONF_PLATFORM_OVERRIDES = "platform_overrides"  # Dict mapping entity unique_id to platform override
 DEFAULT_HCU_AUTH_PORT = 6969
 DEFAULT_HCU_WEBSOCKET_PORT = 9001
+CONF_ADVANCED_DEBUGGING = "advanced_debugging"
 CONF_COMFORT_TEMPERATURE = "comfort_temperature"
+CONF_SELECTED_OEMS = "selected_oems"
+CONF_DISABLED_GROUPS = "disabled_groups"
+DEFAULT_ADVANCED_DEBUGGING = False
 DEFAULT_COMFORT_TEMPERATURE = 21.0
 DEFAULT_MIN_TEMP = 5.0
 DEFAULT_MAX_TEMP = 30.0
+
+CONF_ALL_DISABLED_GROUPS = [
+    "HEATING",
+    "SWICHTING",
+    "ALARM_SWITCHING",
+    "LINKED_SWITCHING",
+    "EXTENDED_LINKED_GARAGE_DOOR",
+    "EXTENDED_LINKED_SWITCHING",
+    "EXTENDED_LINKED_SHUTTER",
+    "EXTENDED_LINKED_NOTIFICATION",
+    "EXTENDED_LINKED_WATERING"
+]
 
 # --- Manufacturer Constants ---
 MANUFACTURER_EQ3 = "eQ-3"
@@ -129,7 +145,6 @@ API_PATHS = {
     "RESET_ENERGY_COUNTER": "/hmip/device/control/resetEnergyCounter",
     "SEND_DOOR_COMMAND": "/hmip/device/control/sendDoorCommand",
     "SEND_DOOR_IMPULSE": "/hmip/device/control/startImpulse",
-    "DEVICE_IDENTIFY": "/hmip/device/control/setIdentify",
     "SET_COLOR_TEMP": "/hmip/device/control/setColorTemperatureDimLevel",
     "SET_COLOR_TEMP_WITH_TIME": "/hmip/device/control/setColorTemperatureDimLevelWithTime",
     "SET_DIM_LEVEL": "/hmip/device/control/setDimLevel",
@@ -218,16 +233,6 @@ GENERIC_BUTTON_DEVICES = {
         "channels": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     },
 }
-
-
-HMIP_OPTIONAL_FEATURE_TO_ENTITY = {
-    "IFeatureDeviceIdentify": {
-        "class": "HcuDeviceIdentifyButton",
-        "requires_data_key": False,
-        "simple_init": True,
-    }
-}
-
 
 HMIP_DEVICE_TYPE_TO_DEVICE_CLASS = {
     "BLIND_ACTUATOR": CoverDeviceClass.BLIND,
