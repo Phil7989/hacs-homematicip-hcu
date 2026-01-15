@@ -140,7 +140,8 @@ class HcuDoorImpulseButton(HcuBaseEntity, ButtonEntity):
 
 class HcuDeviceIdentifyButton(HcuBaseEntity, ButtonEntity):
     """Representation of a button to trigger device identify (blink/beep)."""
-
+ 
+    _attr_translation_key = "hcu_device_identify"
     PLATFORM = Platform.BUTTON
     _attr_icon = "mdi:crosshairs-gps"
 

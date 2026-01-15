@@ -217,6 +217,11 @@
         }
     },
     "entity": {
+        "button": {
+            "hcu_device_identify":{
+                "name": "Identifizieren"
+            }
+        },
         "event": {
             "hcu_button_event": {
                 "state_attributes": {
@@ -224,7 +229,7 @@
                         "state": {
                             "press": "Gedrückt", 
                             "press_long": "Lange gedrückt", 
-                            "press_long_stopp": "Nach langem Tastendruck los gelassen", 
+                            "press_long_stop": "Nach langem Tastendruck los gelassen", 
                             "press_long_start": "Langer Tastendruck gestartet", 
                             "press_short": "Kurz gedrückt"
                         }
