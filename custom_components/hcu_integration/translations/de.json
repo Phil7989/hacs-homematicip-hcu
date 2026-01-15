@@ -217,6 +217,21 @@
         }
     },
     "entity": {
+        "event": {
+            "hcu_button_event": {
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "press": "Gedrückt", 
+                            "press-long": "Lange gedrückt", 
+                            "press-long-stopp": "Nach langem Tastendruck los gelassen", 
+                            "press-long-start": "Langer Tastendruck gestartet", 
+                            "press-short": "Kurz gedrückt"
+                        }
+                    }
+                }
+            }
+        }, 
         "light": {
             "hcu_light": {
                 "state_attributes": {
